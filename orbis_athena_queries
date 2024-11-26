@@ -1,0 +1,703 @@
+CREATE EXTERNAL TABLE IF NOT EXISTS `orbis-kof`.`industries`
+            (
+            bvdid string,
+            nace int
+            )
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+LINES TERMINATED BY '\n'
+LOCATION 's3://orbis-kof/industries/'
+TBLPROPERTIES ('skip.header.line.count'='1');
+
+CREATE EXTERNAL TABLE IF NOT EXISTS `orbis-kof`.`employees`
+            (
+            bvdid string,
+            number_of_employees_date string,
+            number_of_employees int
+            )
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+LINES TERMINATED BY '\n'
+LOCATION 's3://orbis-kof/employees/'
+TBLPROPERTIES ('skip.header.line.count'='1');
+
+CREATE EXTERNAL TABLE IF NOT EXISTS `orbis-kof`.`bvdid_and_name`
+            (
+            bvdid string,
+            name string
+            )
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '\t'
+LINES TERMINATED BY '\n'
+LOCATION 's3://orbis-kof/bvdid_and_name/'
+TBLPROPERTIES ('skip.header.line.count'='1');
+
+CREATE EXTERNAL TABLE IF NOT EXISTS `orbis-kof`.`all_addresses`
+            (
+            bvdid string,
+            postcode string,
+            city string,
+            country string
+            )
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+LINES TERMINATED BY '\n'
+LOCATION 's3://orbis-kof/all_addresses/'
+TBLPROPERTIES ('skip.header.line.count'='1');
+
+CREATE EXTERNAL TABLE IF NOT EXISTS `orbis-kof`.`contact_info`
+            (
+            bvdid string,
+            name_internat string,
+            name_native string,
+            address_line_1 string,
+            address_line_1_native string,
+            address_line_2 string,
+            address_line_2_native string,
+            address_line_3 string,
+            address_line_3_native string,
+            address_line_4 string,
+            address_line_4_native string,
+            postcode string,
+            city string,
+            citi_native string,
+            country string,
+            country_iso_code string,
+            metropolitan_area_us string,
+            state_or_province_us_canada string,
+            county_us_canada string,
+            telephone_number string,
+            fax_number string,
+            websiteaddress string,
+            emailaddress string,
+            region_in_country string,
+            type_region_in_country string,
+            nuts1 string,
+            nuts2 string,
+            nuts3 string
+            )
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '\t'
+LINES TERMINATED BY '\n'
+LOCATION 's3://orbis-kof/contact_info/'
+TBLPROPERTIES ('skip.header.line.count'='1');
+
+CREATE EXTERNAL TABLE IF NOT EXISTS `orbis-kof`.`global_financials_and_ratios`
+            (
+            bvdid string,
+            consolidation_code string,
+            filing_type string,
+            closing_date integer,
+            number_of_months integer,
+            audit_status integer,
+            accounting_practice string,
+            source_for_publicly_quoted_companies integer,
+            original_units string,
+            original_currency string,
+            fixed_assets integer,
+            intangible_fixed_assets integer,
+            tangible_fixed_assets integer,
+            other_fixed_assets integer,
+            current_assets integer,
+            stock integer,
+            debtors integer,
+            other_current_assets integer,
+            cash_and_cash_equivalent integer,
+            total_assets integer,
+            shareholders_funds integer,
+            capital integer,
+            other_shareholders_funds integer,
+            noncurrent_liabilities integer,
+            long_term_debt integer,
+            other_noncurrent_liabilities integer,
+            provisions integer,
+            current_liabilities integer,
+            loans integer,
+            creditors integer,
+            other_current_liabilities integer,
+            total_shareh_funds_and_liab integer,
+            working_capital integer,
+            net_current_assets integer,
+            enterprise_value integer,
+            number_of_employees integer,
+            operating_revenue_turnover integer,
+            sales integer,
+            costs_of_goods_sold integer,
+            gross_profit integer,
+            other_operating_expenses integer,
+            operating_poverl_ebit integer,
+            financial_revenue integer,
+            financial_expenses integer,
+            financial_poverl integer,
+            poverl_before_tax integer,
+            taxation integer,
+            poverl_after_tax integer,
+            extr_and_other_revenue integer,
+            extr_and_other_expenses integer,
+            extr_and_other_poverl integer,
+            poverl_for_period_net_income integer,
+            export_revenue integer,
+            material_costs integer,
+            costs_of_employees integer,
+            depreciation_and_amortization integer,
+            interest_paid integer,
+            research_and_development_expenses integer,
+            cash_flow integer,
+            added_value integer,
+            ebitda integer,
+            roe_using_poverl_before_tax_percent integer,
+            roce_using_poverl_before_tax_percent integer,
+            roa_using_poverl_before_tax_percent integer,
+            roe_using_net_income_percent integer,
+            roce_using_net_income_percent integer,
+            roa_using_net_income_percent integer,
+            profit_margin_percent integer,
+            gross_margin_percent integer,
+            ebitda_margin_percent integer,
+            ebit_margin_percent integer,
+            cash_flow_over_operating_revenue_percent integer,
+            enterprise_value_over_ebitda_x integer,
+            market_cap_over_cash_flow_from_operations_x integer,
+            net_assets_turnover_x integer,
+            interest_cover_x integer,
+            stock_turnover_x integer,
+            collection_period_days integer,
+            credit_period_days integer,
+            export_revenue_over_operating_revenue_percent integer,
+            randd_expenses_over_operating_revenue_percent integer,
+            current_ratio_x integer,
+            liquidity_ratio_x integer,
+            shareholders_liquidity_ratio_x integer,
+            solvency_ratio_asset_based_percent integer,
+            solvency_ratio_liability_based_percent integer,
+            gearing_percent integer,
+            profit_per_employee_thousands integer,
+            operating_revenue_per_employee_thousands integer,
+            costs_of_employees_over_operating_revenue_percent integer,
+            average_cost_of_employee_thousands integer,
+            shareholders_funds_per_employee_thousands integer,
+            working_capital_per_employee_thousands integer,
+            total_assets_per_employee_thousands integer,
+            estimated_operating_revenue string,
+            estimated_employees string,
+            operating_revenue_original_range_value integer,
+            employees_original_range_values_ integer
+            )
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '\t'
+LINES TERMINATED BY '\n'
+LOCATION 's3://orbis-kof/global_financials_and_ratios/'
+TBLPROPERTIES ('skip.header.line.count'='1');
+
+CREATE EXTERNAL TABLE IF NOT EXISTS `orbis-kof`.`key_financials`
+            (
+            bvdid string,
+            consolidation_code string,
+            filing_type string,
+            closing_date integer,
+            number_of_months integer,
+            audit_status string,
+            accounting_practice string,
+            source_for_publicly_quoted_companies string,
+            original_units string,
+            original_currency string,
+            exchange_rate_from_original_currency integer,
+            operating_revenue_turnover integer,
+            poverl_before_tax integer,
+            poverl_for_period_net_income integer,
+            cash_flow integer,
+            total_assets integer,
+            shareholders_funds integer,
+            current_ratio_x integer,
+            profit_margin_percent integer,
+            roe_using_poverl_before_tax_percent integer,
+            roce_using_poverl_before_tax_percent integer,
+            solvency_ratio_asset_based_percent_ integer,
+            price_earning_ratio_x integer,
+            number_of_employees integer,
+            market_capitalisation_mil integer
+            )
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '\t'
+LINES TERMINATED BY '\n'
+LOCATION 's3://orbis-kof/Key_financials-USD/'
+TBLPROPERTIES ('skip.header.line.count'='1');
+
+CREATE EXTERNAL TABLE IF NOT EXISTS `orbis-kof`.`dataprovider_all_months`
+            (
+            url string,
+            bvdid string
+            )
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+LINES TERMINATED BY '\n'
+LOCATION 's3://cc-extract/dataprovider_all_months/'
+TBLPROPERTIES ('skip.header.line.count'='1');
+
+CREATE TABLE urls AS
+SELECT bvdid, websiteaddress
+FROM contact_info
+WHERE websiteaddress <> '';
+
+CREATE TABLE orbis_merged AS
+SELECT *
+FROM  contact_info as c
+INNER JOIN industries AS i
+USING (bvdid)
+INNER JOIN global_financials_and_ratios as f
+USING (bvdid)
+where not (c.name_internat is null or c.city is null or i.nace is null
+or f.number_of_employees is null)
+# or f.operating_revenue_turnover is null or f.research_and_development_expenses is null)
+
+# need to take only most recent year from global financials and ratios
+WITH added_row_number AS (
+  SELECT
+    *,
+    ROW_NUMBER() OVER(partition by bvdid ORDER BY closing_date DESC) AS row_number
+  FROM global_financials_and_ratios
+)
+SELECT
+  *
+FROM added_row_number
+WHERE row_number = 1
+
+CREATE EXTERNAL TABLE IF NOT EXISTS res
+            (
+            url string,
+            url_host_name string,
+            url_host_registered_domain string,
+            url_host_tld string,
+            fetch_time string,
+            crawl string,
+            partition int,
+            paragraph string,
+            lang string,
+            production boolean,
+            travel boolean,
+            demand boolean,
+            supply boolean,
+            finance boolean,
+            sentiment float
+            )
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+LINES TERMINATED BY '\n'
+LOCATION 's3://cc-extract/cc-download-problems-sentiment/english/'
+TBLPROPERTIES ('skip.header.line.count'='1');
+
+CREATE EXTERNAL TABLE res
+            (
+            url string,
+            url_host_name string,
+            url_host_registered_domain string,
+            url_host_tld string,
+            fetch_time timestamp,
+            crawl string,
+            partition int,
+            paragraph string,
+            lang string,
+            production int,
+            travel int,
+            demand int,
+            supply int,
+            finance int,
+            sentiment double
+            )
+PARTITIONED BY (crawl string)
+STORED AS PARQUET
+LOCATION 's3://cc-extract/cc-download-problems-sentiment/english/'
+TBLPROPERTIES ("parquet.compression"="GZIP");
+
+MSCK REPAIR TABLE res;
+
+CREATE EXTERNAL TABLE res_non_english
+            (
+            url string,
+            url_host_name string,
+            url_host_registered_domain string,
+            url_host_tld string,
+            fetch_time timestamp,
+            crawl string,
+            partition int,
+            paragraph string,
+            lang string
+            )
+STORED AS PARQUET
+LOCATION 's3://cc-extract/cc-download-problems-sentiment/non_english/'
+TBLPROPERTIES ("parquet.compression"="GZIP");
+
+CREATE EXTERNAL TABLE res_no_mentions
+            (
+            url_host_registered_domain string,
+            url_host_tld string,
+            crawl string,
+            fetch_time timestamp
+            )
+STORED AS PARQUET
+LOCATION 's3://cc-extract/cc-download-problems-sentiment/domains_without_mentions/'
+TBLPROPERTIES ("parquet.compression"="GZIP");
+
+create table all_addresses as
+select bvdid, websiteaddress, country_iso_code, postcode, city
+from contact_info
+
+CREATE TABLE non_english_unique_paragraphs
+WITH (
+      format = 'Parquet',
+      write_compression = 'SNAPPY',
+      external_location ='s3://cc-extract/cc-download-problems-sentiment/non_english_unique',
+      partitioned_by = ARRAY['lang'])
+AS SELECT DISTINCT paragraph, lang
+FROM res_non_english;
+
+## to get non covid mentioning orbis ids
+CREATE EXTERNAL TABLE orbis_id_list_parnian_covid_mentioning
+            (
+            bvdid string
+            )
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+LINES TERMINATED BY '\n'
+LOCATION 's3://cc-extract/orbis_id_list_parnian_covid_mentioning/'
+TBLPROPERTIES ('skip.header.line.count'='1');
+
+
+SELECT bvdid
+FROM orbis_merged
+WHERE bvdid NOT IN (SELECT bvdid FROM orbis_id_list_parnian_covid_mentioning);
+
+
+CREATE EXTERNAL TABLE IF NOT EXISTS translations_parquet
+            (
+            paragraph string,
+            lang string,
+            translation string
+            )
+STORED AS PARQUET
+LOCATION 's3://cc-extract/cc-download-problems-sentiment/translations_parquet/'
+TBLPROPERTIES ("parquet.compression"="SNAPPY");
+
+CREATE TABLE res_non_english_merged AS
+SELECT *
+FROM  res_non_english as r
+INNER JOIN translations_parquet AS t
+USING (paragraph, lang)
+
+CREATE EXTERNAL TABLE IF NOT EXISTS translations_analyzed
+            (
+            paragraph string,
+            lang string,
+            translation string,
+            production int,
+            travel int,
+            demand int,
+            supply int,
+            finance int,
+            sentiment double
+            )
+STORED AS PARQUET
+LOCATION 's3://cc-extract/cc-download-problems-sentiment/translations_analyzed/'
+TBLPROPERTIES ("parquet.compression"="SNAPPY");
+
+create table res_non_english_trans_analyzed as
+select * from res_non_english
+inner join translations_analyzed
+using (paragraph, lang)
+
+create table res_all as
+(SELECT * FROM res)
+UNION ALL
+(SELECT * FROM res_non_english)
+
+create table res_all as
+(SELECT url, url_host_name, url_host_registered_domain, crawl, fetch_time, lang, production, travel, demand, supply, finance, sentiment FROM res)
+UNION ALL
+(SELECT url, url_host_name, url_host_registered_domain, crawl, fetch_time, lang, production, travel, demand, supply, finance, sentiment FROM res_non_english_trans_analyzed)
+
+# select only orbis records that are in cc
+SELECT bvdid, name_internat, websiteaddress, postcode, country, country_iso_code, nace, closing_date, number_of_employees
+FROM orbis_merged AS o
+INNER JOIN (SELECT DISTINCT url_host_registered_domain as ccurls FROM "ccindex"."res_all") AS c
+ON REPLACE(REPLACE(REPLACE(o.websiteaddress, 'https://', ''), 'http://', ''), 'www.', '') = c.ccurls
+WHERE length(websiteaddress) > 3 and nace>0
+
+SELECT url_host_registered_domain, count(distinct url) as n_subpages from urls_merged_cc group by url_host_registered_domain order by n_subpages desc
+
+
+CREATE TABLE firms_with_urls_and_revenue_larger_5_empl AS
+(SELECT *
+FROM contact_info AS c
+INNER JOIN global_financials_and_ratios AS g USING (bvdid)
+INNER JOIN industries USING (bvdid)
+WHERE (LENGTH(c.websiteaddress) > 3)
+  AND (LENGTH(c.city) > 1)
+  AND g.operating_revenue_turnover IS NOT NULL
+  AND g.sales IS NOT NULL
+  AND g.number_of_employees > 4
+  AND g.closing_date > 20150101)
+
+CREATE TABLE firms_with_urls_and_revenue AS
+(SELECT *
+FROM contact_info AS c
+INNER JOIN global_financials_and_ratios AS g USING (bvdid)
+INNER JOIN industries USING (bvdid)
+WHERE (LENGTH(c.websiteaddress) > 3)
+  AND (LENGTH(c.city) > 1)
+  AND g.operating_revenue_turnover IS NOT NULL
+  AND g.closing_date > 20150101)
+
+
+CREATE EXTERNAL TABLE IF NOT EXISTS `orbiskof2023`.`industry_classifications`
+            (
+            bvdid string,
+            national_industry_classification_used_by_the_ip string,
+            primary_code_in_this_classification string,
+            primary_code_in_national_industry_classification_text_description string,
+            secondary_code_in_this_classification string,
+            secondary_code_in_national_industry_classification_text_description string,
+            nace_rev_2_main_section string,
+            nace_rev_2_core_code_4_digits string,
+            nace_rev_2_core_code_text_description string,
+            nace_rev_2_primary_code string,
+            nace_rev_2_primary_code_text_description string,
+            nace_rev_2_secondary_code string,
+            nace_rev_2_secondary_code_text_description string,
+            naics_core_code_4_digits string,
+            naics_core_code_text_description string,
+            naics_primary_code string,
+            naics_primary_code_text_description string,
+            naics_secondary_code string,
+            naics_secondary_code_text_description string,
+            ussic_core_code_3_digits string,
+            ussic_core_code_text_description string,
+            ussic_primary_code string,
+            ussic_primary_code_text_description string,
+            ussic_secondary_code string,
+            ussic_secondary_code_text_description string,
+            bvd_major_sector string
+            )
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '\t'
+LINES TERMINATED BY '\n'
+LOCATION 's3://orbis-kof-2023/Industry_classifications/'
+TBLPROPERTIES ('skip.header.line.count'='1');
+
+CREATE TABLE industry_classifications_small
+WITH (
+     format = 'PARQUET',
+     write_compression = 'SNAPPY',
+     external_location = 's3://orbis-kof-2023/Industry_classifications_small'
+     )
+AS select bvdid, ussic_primary_code, nace_rev_2_core_code_4_digits
+FROM "industry_classifications";
+
+CREATE EXTERNAL TABLE IF NOT EXISTS `orbiskof2023`.`all_addresses`
+            (
+            bvdid string,
+            street_no_building_etc_line_1 string,
+            street_no_building_etc_line_1_native string,
+            street_no_building_etc_line_2 string,
+            street_no_building_etc_line_2_native string,
+            street_no_building_etc_line_3 string,
+            street_no_building_etc_line_3_native string,
+            street_no_building_etc_line_4 string,
+            street_no_building_etc_line_4_native string,
+            postcode string,
+            city string,
+            city_native string,
+            country string,
+            country_iso_code string,
+            region_in_country string,
+            type_of_region_in_country string,
+            telephone_numer string,
+            fax_number string,
+            address_type string
+            )
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '\t'
+LINES TERMINATED BY '\n'
+LOCATION 's3://orbis-kof-2023/All_addresses/'
+TBLPROPERTIES ('skip.header.line.count'='1');
+
+CREATE EXTERNAL TABLE IF NOT EXISTS `orbiskof2023`.`contact_info`
+            (
+            bvdid string,
+            name_internat string,
+            name_native string,
+            street_no_building_etc_line_1 string,
+            street_no_building_etc_line_1_native string,
+            street_no_building_etc_line_2 string,
+            street_no_building_etc_line_2_native string,
+            street_no_building_etc_line_3 string,
+            street_no_building_etc_line_3_native string,
+            street_no_building_etc_line_4 string,
+            street_no_building_etc_line_4_native string,
+            postcode string,
+            city string,
+            city_native string,
+            country string,
+            country_iso_code string,
+            metropolitan_area_in_us string,
+            state_or_province_in_us_or_canada string,
+            country_in_us_or_canada string,
+            telephone_numer string,
+            fax_number string,
+            website_address string,
+            email_address string,
+            region_in_country string,
+            type_of_region_in_country string,
+            nuts1 string,
+            nuts2 string,
+            nuts3 string,
+            latitude string,
+            longitude string
+            )
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '\t'
+LINES TERMINATED BY '\n'
+LOCATION 's3://orbis-kof-2023/Contact_info/'
+TBLPROPERTIES ('skip.header.line.count'='1');
+
+CREATE TABLE firms_100_employees_or_10_mil_turnover_any_year_full
+WITH (
+    format = 'Parquet',
+    write_compression = 'SNAPPY',
+    external_location = 's3://orbis-kof-2023/firms_100_employees_or_10_mil_turnover_any_year_full/'
+)
+AS (
+    SELECT bvdid
+    FROM firms_100_employees_or_10_mil_turnover_any_year
+    INNER JOIN
+    (SELECT bvdid, closing_date, total_assets, capital, number_of_employees, operating_revenue_turnover, sales, gross_profit, research_and_development_expenses
+    FROM "orbiskof2023"."global_financials_and_ratios")
+    USING (bvdid)
+    INNER JOIN
+    (SELECT bvdid, name_internat, name_native, postcode, city, region_in_country, country_iso_code, website_address
+    FROM "orbiskof2023"."contact_info")
+    USING (bvdid)
+);
+
+CREATE TABLE firms_100_employees_or_10_mil_turnover_any_year_full
+WITH (
+    format = 'Parquet',
+    write_compression = 'SNAPPY',
+    external_location = 's3://orbis-kof-2023/firms_100_employees_or_10_mil_turnover_any_year_full/'
+)
+AS (
+    SELECT bvdid
+    FROM firms_100_employees_or_10_mil_turnover_any_year
+    INNER JOIN
+    (SELECT bvdid, closing_date, total_assets, capital, number_of_employees, operating_revenue_turnover, sales, gross_profit, research_and_development_expenses
+    FROM "orbiskof2023"."global_financials_and_ratios")
+    USING (bvdid)
+    INNER JOIN
+    (SELECT bvdid, name_internat, name_native, postcode, city, region_in_country, country_iso_code, website_address
+    FROM "orbiskof2023"."contact_info")
+    USING (bvdid)
+);
+
+CREATE EXTERNAL TABLE IF NOT EXISTS `orbiskof2023`.`key_financials` ( bvdid string, consolidation_code string, filing_type string, closing_date integer, number_of_months integer, audit_status string, accounting_practice string, source_for_publicly_quoted_companies string, original_units string, original_currency string, exchange_rate_from_original_currency integer, operating_revenue_turnover bigint, poverl_before_tax integer, poverl_for_period_net_income integer, cash_flow bigint, total_assets bigint, shareholders_funds bigint, current_ratio_x integer, profit_margin_percent integer, roe_using_poverl_before_tax_percent integer, roce_using_poverl_before_tax_percent integer, solvency_ratio_asset_based_percent_ integer, price_earning_ratio_x integer, number_of_employees integer, market_capitalisation_mil integer ) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' LINES TERMINATED BY '\n' LOCATION 's3://orbis-kof-2023/Key_financials/' TBLPROPERTIES ('skip.header.line.count'='1')
+
+
+CREATE EXTERNAL TABLE IF NOT EXISTS `orbiskof2023`.`global_financials_and_ratios` ( bvdid string, consolidation_code string, filing_type string, closing_date integer, number_of_months integer, audit_status integer, accounting_practice string, source_for_publicly_quoted_companies string, original_units string, original_currency string, fixed_assets float, intangible_fixed_assets float, tangible_fixed_assets float, other_fixed_assets float, current_assets float, stock float, debtors float, other_current_assets float, cash_and_cash_equivalent float, total_assets float, shareholders_funds float, capital float, other_shareholders_funds float, noncurrent_liabilities float, long_term_debt float, other_noncurrent_liabilities float, provisions float, current_liabilities float, loans float, creditors float, other_current_liabilities float, total_shareh_funds_and_liab float, working_capital float, net_current_assets float, enterprise_value float, number_of_employees float, operating_revenue_turnover float, sales float, costs_of_goods_sold float, gross_profit float, other_operating_expenses float, operating_poverl_ebit float, financial_revenue float, financial_expenses float, financial_poverl float, poverl_before_tax float, taxation float, poverl_after_tax float, extr_and_other_revenue float, extr_and_other_expenses float, extr_and_other_poverl float, poverl_for_period_net_income float, export_revenue float, material_costs float, costs_of_employees float, depreciation_and_amortization float, interest_paid float, research_and_development_expenses float, cash_flow float, added_value float, ebitda float, roe_using_poverl_before_tax_percent float, roce_using_poverl_before_tax_percent float, roa_using_poverl_before_tax_percent float, roe_using_net_income_percent float, roce_using_net_income_percent float, roa_using_net_income_percent float, profit_margin_percent float, gross_margin_percent float, ebitda_margin_percent float, ebit_margin_percent float, cash_flow_over_operating_revenue_percent float, enterprise_value_over_ebitda_x float, market_cap_over_cash_flow_from_operations_x float, net_assets_turnover_x float, interest_cover_x float, stock_turnover_x float, collection_period_days float, credit_period_days float, export_revenue_over_operating_revenue_percent float, randd_expenses_over_operating_revenue_percent float, current_ratio_x float, liquidity_ratio_x float, shareholders_liquidity_ratio_x float, solvency_ratio_asset_based_percent float, solvency_ratio_liability_based_percent float, gearing_percent float, profit_per_employee_thousands float, operating_revenue_per_employee_thousands float, costs_of_employees_over_operating_revenue_percent float, average_cost_of_employee_thousands float, shareholders_funds_per_employee_thousands float, working_capital_per_employee_thousands float, total_assets_per_employee_thousands float, estimated_operating_revenue string, estimated_employees string, operating_revenue_original_range_value float, employees_original_range_values_ float ) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' LINES TERMINATED BY '\n' LOCATION 's3://orbis-kof-2023/Industry-Global_financials_and_ratios/' TBLPROPERTIES ('skip.header.line.count'='1')
+
+CREATE TABLE firms_100_employees_or_10_mil_turnover_any_year
+WITH (
+    format = 'Parquet',
+    write_compression = 'SNAPPY',
+    external_location = 's3://orbis-kof-2023/firms_100_employees_or_10_mil_turnover_any_year/'
+)
+AS (
+    SELECT DISTINCT(bvdid)
+    FROM key_financials
+    WHERE number_of_employees >= 100
+    OR operating_revenue_turnover >= 10000000
+    OR market_capitalisation_mil > 0
+);
+
+
+CREATE EXTERNAL TABLE res_full_orbis
+            (
+            url string,
+            url_host_name string,
+            url_host_registered_domain string,
+            url_host_tld string,
+            fetch_time string,
+            content_digest string,
+            crawl string,
+            content_languages string,
+            partition_n int,
+            keyword_paragraphs string
+            )
+STORED AS PARQUET
+LOCATION 's3://cc-download-orbis-global/res/'
+TBLPROPERTIES ('parquet.compression'='GZIP',
+               'parquet.use-column-names' = 'true',
+               'parquet.column.index.access'='true',
+               'serialization.format' = '1',
+               'serialization.null.format'='')
+;
+
+CREATE TABLE orbis_global_min_5_empl_has_website AS
+SELECT ci.bvdid, ci.name_internat, ci.country, ci.region_in_country, ci.city,
+    ci.website_address, ics.nace_rev_2_core_code_4_digits
+FROM contact_info ci
+INNER JOIN industry_classifications_small ics ON ci.bvdid = ics.bvdid
+WHERE LENGTH(ci.website_address) > 3
+  AND ci.bvdid IN (
+    SELECT kfc.bvdid
+    FROM key_financials kfc
+    WHERE kfc.number_of_employees >= 5
+  );
+
+create table orbis_global_min_5_empl_has_website_merged_url_list as
+SELECT bvdid, name_internat, country, region_in_country, city, REPLACE(REPLACE(REPLACE(website_address, 'https://', ''), 'http://', ''), 'www.', '') as websiteaddress, nace_rev_2_core_code_4_digits
+FROM "orbiskof2023"."orbis_global_min_5_empl_has_website" o
+WHERE REPLACE(REPLACE(REPLACE(website_address, 'https://', ''), 'http://', ''), 'www.', '')
+IN (SELECT DISTINCT websiteaddress as c FROM "ccindex"."url_list")
+
+SELECT ogm5e.bvdid, kf.total_assets
+FROM orbis_global_min_5_empl_has_website_merged_url_list_dynamic ogm5e
+INNER JOIN orbiskof2023.key_financials kf ON ogm5e.bvdid = kf.bvdid AND ogm5e.closing_date = kf.closing_date
+WHERE ogm5e.number_of_employees > 0 OR ogm5e.operating_revenue_turnover > 0
+
+create table orbis_global_min_5_empl_has_website_merged_url_list_dynamic as
+select kf.bvdid, kf.closing_date, kf.number_of_employees, kf.operating_revenue_turnover, gfar.sales, kf.total_assets
+FROM orbiskof2023.key_financials kf
+INNER JOIN orbiskof2023.global_financials_and_ratios gfar ON kf.bvdid = gfar.bvdid AND kf.closing_date = gfar.closing_date
+where kf.closing_date > 20160331
+and kf.bvdid IN (SELECT bvdid FROM orbis_global_min_5_empl_has_website_merged_url_list)
+
+create table orbis_global_min_5_empl_has_website_merged_url_list_dynamic_nov_23_2 as
+select bvdid, closing_date, number_of_employees, operating_revenue_turnover, total_assets
+FROM orbiskof2023.key_financials
+where closing_date > 20160331
+and bvdid IN (SELECT bvdid FROM orbis_global_min_5_empl_has_website_merged_url_list)
+
+create table orbis_global_min_5_empl_has_website_merged_url_list_dynamic_nov_23_3 as
+select bvdid, closing_date, number_of_employees, operating_revenue_turnover, total_assets
+FROM orbiskof2023.key_financials
+where CAST(SUBSTR(CAST(closing_date AS varchar), 1, 4) AS INT) >= 2018
+and bvdid IN (SELECT bvdid FROM orbis_global_min_5_empl_has_website_merged_url_list)
+
+CREATE TABLE orbis_global_lang_dist AS
+SELECT country, content_languages, (CASE WHEN content_languages = 'eng' THEN 1 ELSE 0 END) as eng
+FROM res_full_orbis r
+INNER JOIN (
+    SELECT country, REPLACE(REPLACE(REPLACE(website_address, 'https://', ''), 'http://', ''), 'www.', '') as url_host_registered_domain
+    FROM "orbiskof2023"."orbis_global_min_5_empl_has_website"
+) o
+ON r.url_host_registered_domain=o.url_host_registered_domain
+
+SELECT country,
+       SUM(eng) / COUNT(*) AS share_of_eng
+FROM orbis_global_lang_dist
+GROUP BY country
+ORDER BY share_of_eng DESC
+
+SELECT country,
+       CAST(SUM(eng) as double)/ CAST(count(*) as double) AS share_of_eng
+FROM orbis_global_lang_dist
+GROUP BY country
+ORDER BY share_of_eng DESC
