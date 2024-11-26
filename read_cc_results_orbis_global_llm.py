@@ -3,36 +3,13 @@ import pandas as pd
 from utils import remove_url_prefix
 import numpy as np
 
-# df = pd.read_parquet('C:/Users/Jakob/Downloads/res_llm_consolidated.parquet')
-# df.columns
 df = wr.s3.read_parquet('s3://cc-download-orbis-global/res_llm_consolidated/res_llm_consolidated_full.parquet')
 domain_index_cols = ['url_host_registered_domain', 'date']
 df[domain_index_cols] = df[domain_index_cols].astype('category')
 df = df.set_index(domain_index_cols).sort_index()
 
-affectedness_categories = ['production_affected', 'demand_affected', 'supply_affected']
 tags = ['hygiene measures', 'remote work', 'supply chain issues', 'closure', 'financial impact', 'travel restrictions']
 tags = [x.replace(' ', '_') for x in tags]
-
-# export results for Swiss survey firms for Martin
-# swiss_survey_urls = pd.read_excel('/Users/Jakob/Downloads/kof_domains_ids_survey.xlsx',
-#                                   skiprows=1,
-#                                   names=['drop', 'id', 'url'])
-# swiss_survey_urls.drop(columns='drop', inplace=True)
-# res_swiss = res[res.url_host_registered_domain.isin(swiss_survey_urls.url)]
-# res_swiss.to_csv('/Users/Jakob/Downloads/res_swiss.csv', index=False)
-#
-# res_swiss.url_host_registered_domain.nunique()
-# swiss_survey_urls.url.nunique()
-
-# add dataprovider high heartbeat dummy
-dataprovider = wr.s3.read_csv('s3://cc-download-orbis-global/dataprovider/All companies for profit high heartbeat all languages.csv', usecols=['Hostname'])
-dataprovider['url_host_registered_domain'] = dataprovider['Hostname'].apply(remove_url_prefix)
-dataprovider = dataprovider.drop(columns=['Hostname']).drop_duplicates().set_index('url_host_registered_domain').sort_index()
-dataprovider['dataprovider_high_heartbeat'] = True
-df = df.join(dataprovider, on='url_host_registered_domain', how='left')
-df['dataprovider_high_heartbeat'] = df['dataprovider_high_heartbeat'].fillna(False)
-del dataprovider
 
 # content digest heartbeat
 cdh = wr.s3.read_parquet('s3://cc-download-orbis-global/res_llm_consolidated/res_llm_consolidated_content_digest_heartbeat.parquet')
