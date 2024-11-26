@@ -223,17 +223,6 @@ LINES TERMINATED BY '\n'
 LOCATION 's3://orbis-kof/Key_financials-USD/'
 TBLPROPERTIES ('skip.header.line.count'='1');
 
-CREATE EXTERNAL TABLE IF NOT EXISTS `orbis-kof`.`dataprovider_all_months`
-            (
-            url string,
-            bvdid string
-            )
-ROW FORMAT DELIMITED
-FIELDS TERMINATED BY ','
-LINES TERMINATED BY '\n'
-LOCATION 's3://cc-extract/dataprovider_all_months/'
-TBLPROPERTIES ('skip.header.line.count'='1');
-
 CREATE TABLE urls AS
 SELECT bvdid, websiteaddress
 FROM contact_info
@@ -250,170 +239,9 @@ where not (c.name_internat is null or c.city is null or i.nace is null
 or f.number_of_employees is null)
 # or f.operating_revenue_turnover is null or f.research_and_development_expenses is null)
 
-# need to take only most recent year from global financials and ratios
-WITH added_row_number AS (
-  SELECT
-    *,
-    ROW_NUMBER() OVER(partition by bvdid ORDER BY closing_date DESC) AS row_number
-  FROM global_financials_and_ratios
-)
-SELECT
-  *
-FROM added_row_number
-WHERE row_number = 1
-
-CREATE EXTERNAL TABLE IF NOT EXISTS res
-            (
-            url string,
-            url_host_name string,
-            url_host_registered_domain string,
-            url_host_tld string,
-            fetch_time string,
-            crawl string,
-            partition int,
-            paragraph string,
-            lang string,
-            production boolean,
-            travel boolean,
-            demand boolean,
-            supply boolean,
-            finance boolean,
-            sentiment float
-            )
-ROW FORMAT DELIMITED
-FIELDS TERMINATED BY ','
-LINES TERMINATED BY '\n'
-LOCATION 's3://cc-extract/cc-download-problems-sentiment/english/'
-TBLPROPERTIES ('skip.header.line.count'='1');
-
-CREATE EXTERNAL TABLE res
-            (
-            url string,
-            url_host_name string,
-            url_host_registered_domain string,
-            url_host_tld string,
-            fetch_time timestamp,
-            crawl string,
-            partition int,
-            paragraph string,
-            lang string,
-            production int,
-            travel int,
-            demand int,
-            supply int,
-            finance int,
-            sentiment double
-            )
-PARTITIONED BY (crawl string)
-STORED AS PARQUET
-LOCATION 's3://cc-extract/cc-download-problems-sentiment/english/'
-TBLPROPERTIES ("parquet.compression"="GZIP");
-
-MSCK REPAIR TABLE res;
-
-CREATE EXTERNAL TABLE res_non_english
-            (
-            url string,
-            url_host_name string,
-            url_host_registered_domain string,
-            url_host_tld string,
-            fetch_time timestamp,
-            crawl string,
-            partition int,
-            paragraph string,
-            lang string
-            )
-STORED AS PARQUET
-LOCATION 's3://cc-extract/cc-download-problems-sentiment/non_english/'
-TBLPROPERTIES ("parquet.compression"="GZIP");
-
-CREATE EXTERNAL TABLE res_no_mentions
-            (
-            url_host_registered_domain string,
-            url_host_tld string,
-            crawl string,
-            fetch_time timestamp
-            )
-STORED AS PARQUET
-LOCATION 's3://cc-extract/cc-download-problems-sentiment/domains_without_mentions/'
-TBLPROPERTIES ("parquet.compression"="GZIP");
-
 create table all_addresses as
 select bvdid, websiteaddress, country_iso_code, postcode, city
 from contact_info
-
-CREATE TABLE non_english_unique_paragraphs
-WITH (
-      format = 'Parquet',
-      write_compression = 'SNAPPY',
-      external_location ='s3://cc-extract/cc-download-problems-sentiment/non_english_unique',
-      partitioned_by = ARRAY['lang'])
-AS SELECT DISTINCT paragraph, lang
-FROM res_non_english;
-
-## to get non covid mentioning orbis ids
-CREATE EXTERNAL TABLE orbis_id_list_parnian_covid_mentioning
-            (
-            bvdid string
-            )
-ROW FORMAT DELIMITED
-FIELDS TERMINATED BY ','
-LINES TERMINATED BY '\n'
-LOCATION 's3://cc-extract/orbis_id_list_parnian_covid_mentioning/'
-TBLPROPERTIES ('skip.header.line.count'='1');
-
-
-SELECT bvdid
-FROM orbis_merged
-WHERE bvdid NOT IN (SELECT bvdid FROM orbis_id_list_parnian_covid_mentioning);
-
-
-CREATE EXTERNAL TABLE IF NOT EXISTS translations_parquet
-            (
-            paragraph string,
-            lang string,
-            translation string
-            )
-STORED AS PARQUET
-LOCATION 's3://cc-extract/cc-download-problems-sentiment/translations_parquet/'
-TBLPROPERTIES ("parquet.compression"="SNAPPY");
-
-CREATE TABLE res_non_english_merged AS
-SELECT *
-FROM  res_non_english as r
-INNER JOIN translations_parquet AS t
-USING (paragraph, lang)
-
-CREATE EXTERNAL TABLE IF NOT EXISTS translations_analyzed
-            (
-            paragraph string,
-            lang string,
-            translation string,
-            production int,
-            travel int,
-            demand int,
-            supply int,
-            finance int,
-            sentiment double
-            )
-STORED AS PARQUET
-LOCATION 's3://cc-extract/cc-download-problems-sentiment/translations_analyzed/'
-TBLPROPERTIES ("parquet.compression"="SNAPPY");
-
-create table res_non_english_trans_analyzed as
-select * from res_non_english
-inner join translations_analyzed
-using (paragraph, lang)
-
-create table res_all as
-(SELECT * FROM res)
-UNION ALL
-(SELECT * FROM res_non_english)
-
-create table res_all as
-(SELECT url, url_host_name, url_host_registered_domain, crawl, fetch_time, lang, production, travel, demand, supply, finance, sentiment FROM res)
-UNION ALL
-(SELECT url, url_host_name, url_host_registered_domain, crawl, fetch_time, lang, production, travel, demand, supply, finance, sentiment FROM res_non_english_trans_analyzed)
 
 # select only orbis records that are in cc
 SELECT bvdid, name_internat, websiteaddress, postcode, country, country_iso_code, nace, closing_date, number_of_employees
@@ -423,7 +251,6 @@ ON REPLACE(REPLACE(REPLACE(o.websiteaddress, 'https://', ''), 'http://', ''), 'w
 WHERE length(websiteaddress) > 3 and nace>0
 
 SELECT url_host_registered_domain, count(distinct url) as n_subpages from urls_merged_cc group by url_host_registered_domain order by n_subpages desc
-
 
 CREATE TABLE firms_with_urls_and_revenue_larger_5_empl AS
 (SELECT *
