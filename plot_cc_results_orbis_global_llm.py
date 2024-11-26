@@ -20,33 +20,12 @@ with open('tag_mapping.json', 'r') as f:
 for tag in tag_mapping.keys():
     print(', '.join(tag_mapping[tag]))
 
-affectedness_categories = ['production_affected', 'demand_affected', 'supply_affected']
 tags = ['hygiene measures', 'remote work', 'supply chain issues', 'closure', 'financial impact', 'travel restrictions']
 tags = [x.replace(' ', '_') for x in tags]
 wai_labels = {'affected': 'Mean affectedness (scale 0-3)',
               'affected_min_1': 'Share firms affectedness ($>$0)',
               'affected_min_2': 'Share firms affectedness ($>=$2)',
               'affected_3': 'Share of severely affected firms'}
-
-relevant_nace_sections = ['Accommodation and food service activities', 'Arts, entertainment and recreation',
-                          'Construction', 'Education', 'Financial and insurance activities',
-                          'Human health and social work activities', 'Information and communication',
-                          'Manufacturing', 'Transporting and storage',
-                          'Wholesale and retail trade; repair of motor vehicles and motorcycles']
-relevant_nace_2_digit = ['Retail trade, except of motor vehicles and motorcycles',
-                         # 'Wholesale trade, except of motor vehicles and motorcycles',
-                         'Human health activities', 'Food and beverage service activities', 'Education',
-                         'Construction of buildings',
-                         # 'Computer programming, consultancy and related activities',
-                         # 'Land transport and transport via pipelines',
-                         'Accommodation', # 'Manufacture of food products',
-                         'Travel agency, tour operator and other reservation service and related activities',
-                         # 'Manufacture of electrical equipment',
-                         # 'Manufacture of chemicals and chemical products',
-                         # 'Telecommunications',
-                         'Creative, arts and entertainment activities',
-                         # 'Manufacture of motor vehicles, trailers and semi-trailers',
-                         'Air transport', ]
 
 df = pd.read_parquet('C:/Users/Jakob/Downloads/cc_res_llm_deduplicated_bvdid_merged_orbis_orbis_dynamic_25_11.parquet')
 
@@ -112,87 +91,6 @@ plt.savefig('/Users/Jakob/Downloads/num_and_share_domains_mentioning_covid_llm.p
             bbox_inches='tight')
 plt.show()
 
-## share of domains mentioning covid, all vs high heartbeat vs large
-fig, ax = plt.subplots(figsize=(10, 5))
-to_plot = df.groupby(level=['date']).covid_mention.sum().div(
-    df.groupby(level=['date']).cc_data_available.sum()) * 100
-to_plot.plot(ax=ax, label='All')
-to_plot = df[df.dataprovider_high_heartbeat].groupby(level=['date']).covid_mention.sum().div(
-    df[df.dataprovider_high_heartbeat].groupby(level=['date']).cc_data_available.sum()) * 100
-to_plot.plot(ax=ax, label='High heartbeat')
-max_employees = df.groupby(df.index.get_level_values('bvdid')).number_of_employees.max()
-min_50_empl = df.index.get_level_values('bvdid').isin(max_employees[max_employees >= 50].index)
-to_plot = df[min_50_empl].groupby(level=['date']).covid_mention.sum().div(
-    df[min_50_empl].groupby(level=['date']).cc_data_available.sum()) * 100
-to_plot.plot(ax=ax, label='50+ employees')
-to_plot = df[df.content_digest_heartbeat==1].groupby(level=['date']).covid_mention.sum().div(
-    df[df.content_digest_heartbeat==1].groupby(level=['date']).cc_data_available.sum()) * 100
-to_plot.plot(ax=ax, label='High heartbeat (content digest)')
-ax.yaxis.set_major_formatter(mpl.ticker.StrMethodFormatter('{x:,.0f}'))
-format_date_axis(ax)
-ax.set_ylabel('Share of domains mentioning covid (%)')
-ax.set_xlabel('')
-ax.legend()
-plt.savefig(
-    '/Users/Jakob/Downloads/share_covid_mentioning_firms_all_vs_high_heartbeat_vs_50_empl_6_months_expiry_llm.pdf',
-    dpi=300, bbox_inches='tight')
-plt.show()
-
-## mean affectedness, all vs high heartbeat vs large
-fig, ax = plt.subplots(figsize=(10, 5))
-to_plot = df.groupby(level=['date']).affected.mean()
-to_plot.plot(ax=ax, label='All')
-to_plot = df[df.dataprovider_high_heartbeat].groupby(level=['date']).affected.mean()
-to_plot.plot(ax=ax, label='High heartbeat')
-to_plot = df[min_50_empl].groupby(level=['date']).affected.mean()
-to_plot.plot(ax=ax, label='50+ employees')
-to_plot = df[df.content_digest_heartbeat==1].groupby(level=['date']).affected.mean()
-to_plot.plot(ax=ax, label='High heartbeat (content digest)')
-format_date_axis(ax)
-ax.set_ylabel('Mean affectedness')
-ax.set_xlabel('')
-ax.legend()
-plt.savefig(
-    '/Users/Jakob/Downloads/mean_affected_all_vs_high_heartbeat_vs_50_empl_llm.pdf',
-    dpi=300, bbox_inches='tight')
-plt.show()
-
-
-# calculate shares by industry over time
-industry_type = 'nace_section'  # 'nace_2_digit'
-# df[df.index.get_level_values('url_host_registered_domain').isin(covid_mentioning_urls)]
-# df[df.content_digest_heartbeat==1]
-mean_affected_by_industry = df[df.dataprovider_high_heartbeat].groupby(['date', industry_type]).affected.mean().reset_index()
-
-to_plot = mean_affected_by_industry.pivot(index='date', columns=industry_type, values='affected')
-# top 10 affected industries
-# to_plot = to_plot[to_plot.max().sort_values(ascending=False).head(10).index]
-# top 10 biggest industries
-# to_plot = to_plot[total_firms_by_industry.sort_values('total_firms', ascending=False).head(10)[industry_type]]
-# pre-defined industries
-if industry_type == 'nace_section':
-    to_plot = to_plot[relevant_nace_sections]
-elif industry_type == 'nace_2_digit':
-    to_plot = to_plot[relevant_nace_2_digit]
-ax = to_plot.plot()
-format_date_axis(ax)
-# order legend by max value
-handles, labels = ax.get_legend_handles_labels()
-handles, labels = zip(*sorted(zip(handles, labels), key=lambda t: to_plot[t[1]].max(), reverse=True))
-# Shrink current axis by 20%
-box = ax.get_position()
-ax.set_position([box.x0, box.y0, box.width * 0.85, box.height])
-leg = ax.legend(handles, labels, loc='upper left', title='Industry', bbox_to_anchor=(1, 0.8))
-leg._legend_box.align = 'left'
-ax.set_xlabel('')
-ax.set_ylabel(f'Mean affected')
-plt.gcf().set_size_inches(10, 5)
-plt.tight_layout()
-plt.savefig(
-    f'/Users/Jakob/Downloads/mean_affected_by_industry_llm.pdf',
-    dpi=300, bbox_inches='tight')
-plt.show()
-
 # mean affectedness by country
 mean_affected_by_country = df.groupby(['date', 'country'])['affected'].apply(lambda x: x.mean(skipna=True))
 to_plot = mean_affected_by_country.reset_index().pivot(index='date', columns='country', values='affected')
@@ -227,29 +125,6 @@ oxford_policy_tracker_cols = [col for col in oxford_policy_tracker.columns if co
 # center and normalize all index columns
 index_cols = ['StringencyIndex_Average', 'GovernmentResponseIndex_Average', 'ContainmentHealthIndex_Average',
               'EconomicSupportIndex']
-# oxford_policy_tracker[index_cols] = (oxford_policy_tracker[index_cols] - oxford_policy_tracker[
-#     index_cols].mean()) / oxford_policy_tracker[index_cols].std() # normalize index columns
-# ## convert fiscal measures to % of GDP
-# path = 'https://api.worldbank.org/v2/en/indicator/NY.GDP.MKTP.CD?downloadformat=csv'
-# import requests
-# from zipfile import ZipFile
-# from io import BytesIO
-# with ZipFile(BytesIO(requests.get(path).content)) as zf:
-#     with zf.open('API_NY.GDP.MKTP.CD_DS2_en_csv_v2_5871885.csv') as f:
-#         gdp_df = pd.read_csv(f, header=2)
-# gdp_df.drop(columns=['Country Name', 'Indicator Name', 'Indicator Code'], inplace=True)
-# gdp_df = pd.wide_to_long(gdp_df, "", i="Country Code", j="year")
-# gdp_df.columns = ['', 'gdp']
-# gdp_df = gdp_df[['gdp']]
-# # ffill missing values
-# gdp_df['gdp'] = gdp_df.groupby('Country Code').gdp.ffill()
-# gdp_df.reset_index(inplace=True)
-# gdp_df = gdp_df[gdp_df.year == 2020].drop(columns=['year'])
-# oxford_policy_tracker = oxford_policy_tracker.merge(gdp_df, left_on='country', right_on='Country Code', how='left').drop(columns=['Country Code'])
-# oxford_policy_tracker['fiscal_measures_pct_gdp'] = oxford_policy_tracker['E3_Fiscal measures'] / oxford_policy_tracker['gdp'] * 100
-# oxford_policy_tracker.sort_values('gdp', ascending=False).head(20)
-# oxford_policy_tracker_cols += ['fiscal_measures_pct_gdp']
-# round all ordinal scale variables to integers
 scale_vars = ['C1M_School closing', 'C2M_Workplace closing', 'C5M_Close public transport',
               'C6M_Stay at home requirements', 'E1_Income support', 'E2_Debt/contract relief']
 oxford_policy_tracker[scale_vars] = oxford_policy_tracker[scale_vars].round(0)
@@ -353,14 +228,6 @@ agg_dict.update({'cc_data_available': 'sum', 'number_of_employees': 'sum', 'empl
 affected_by_industry_max_weighted = affected_by_industry_max_weighted.groupby('nace_custom', observed=True).agg(agg_dict)
 affected_by_industry_max_weighted[wai_cols] = affected_by_industry_max_weighted[wai_cols].div(affected_by_industry_max_weighted['number_of_employees'], axis=0)
 
-# naics_to_nace = pd.read_csv('C://Users/Jakob/Downloads/naics_to_nace_compustat.csv')
-# essential_industries.naics = essential_industries.naics.astype(int)
-# essential_industries = essential_industries.merge(naics_to_nace, on ='naics', how='left')
-# essential_industries.nace = essential_industries.nace.fillna(essential_industries.naics.map(naics_to_nace.set_index('naics').nace.astype(str).str[:4].astype(int)))
-# essential_industries.nace.isna().sum()
-# essential_nace = [1-11]
-
-
 to_plot = affected_by_industry_max_weighted.affected_3.loc[relevant_custom_nace_sections].sort_values(ascending=False)*100
 to_plot.index = to_plot.reset_index().nace_custom.replace({'Arts, entertainment and recreation': 'Arts, Entertainment & Recreation',
                                            'Human health and social work activities': 'Human Health & Social Work Activities',
@@ -368,12 +235,6 @@ to_plot.index = to_plot.reset_index().nace_custom.replace({'Arts, entertainment 
                                            'Transporting and storage': 'Transporting & Storage',
                                            'Food and beverage service activities': 'Food & Beverage Service Activities',
                                            'Services': 'Other Services', 'Utilities and Environmental Services': 'Energy Utilities & Environmental Services'})
-# plotting.plot_barh(to_plot, color='black',
-#                    xlabel='Share of severely affected firms (weighted by number of employees)', extend_x_axis=0.1, label_fmt='%.0f%%')
-# affected_by_industry_max_weighted.affected_3.loc[relevant_nace_sections].sort_values(ascending=True).plot(kind='barh')
-# plt.xlabel('Share of severely affected firms, weighted by number of employees')
-# plt.ylabel('Industry')
-# plt.show()
 label_fmt = '%.0f%%'
 to_plot.plot(kind='barh', figsize=(7, 5), color='black')
 plt.xlabel('Share of severely affected firms (weighted by number of employees)')
@@ -387,13 +248,6 @@ ax.yaxis.set_minor_locator(plt.NullLocator())
 plt.savefig('/Users/Jakob/Downloads/weighted_share_severely_affected_firms_by_industry_llm.pdf', dpi=300, bbox_inches='tight')
 plt.show()
 
-affected_by_industry_max_weighted.employee_data_available.sum()/len(affected_max_by_firm)
-
-# employee weighted affectedness over time
-# def weighted_avg(group, value_col, weight_col):
-#     return (group[value_col] * group[weight_col]).sum() / group[weight_col].sum()
-#
-# affected_by_country_weighted = df.groupby(['date', 'country'], observed=True).apply(lambda x: weighted_avg(x, 'affected_3', 'number_of_employees'))
 
 ## WAI time series plots
 def mix_colors(cf, cb): # cf = foreground color, cb = background color
@@ -714,8 +568,8 @@ df.loc[df.country.isin(to_fix), 'region_level_1'] = df.loc[df.country.isin(to_fi
 df['region_level_1'] = df['region_level_1'].astype('category')
 
 # get df of all cities in dataset
-# cities = affected_max_by_firm.groupby(['city', 'region_level_1', 'country'], observed=True).size().reset_index(name='firm_count').sort_values('firm_count', ascending=False)
-# cities.to_parquet('C:/Users/Jakob/Downloads/covid_orbis_global_cities.parquet')
+cities = affected_max_by_firm.groupby(['city', 'region_level_1', 'country'], observed=True).size().reset_index(name='firm_count').sort_values('firm_count', ascending=False)
+cities.to_parquet('C:/Users/Jakob/Downloads/covid_orbis_global_cities.parquet')
 
 # country to iso2
 country_counts['country_iso2'] = coco.convert(names=country_counts.country, to='ISO2')
@@ -764,19 +618,19 @@ relevant_countries = [c for c in relevant_countries if c in use_countries]
 
 ## plot for each country
 # download GADM dataset to get administrative boundaries for each country
-# import requests, zipfile, io, os
-# for country in relevant_countries:
-#     country_iso3 = coco.convert(names=[country], to='ISO3')
-#     if os.path.exists(f'C:/Users/Jakob/Downloads/gadm41/{country_iso3}/gadm41_{country_iso3}_1.shp'):
-#         continue
-#     url = f'https://geodata.ucdavis.edu/gadm/gadm4.1/shp/gadm41_{country_iso3}_shp.zip'
-#     r = requests.get(url)
-#     if not zipfile.is_zipfile(io.BytesIO(r.content)):
-#         print(f'File for {country} is not a zipfile')
-#         continue
-#     z = zipfile.ZipFile(io.BytesIO(r.content))
-#     z.extractall(f'C:/Users/Jakob/Downloads/gadm41/{country_iso3}')
-#     del r, z
+import requests, zipfile, io, os
+for country in relevant_countries:
+    country_iso3 = coco.convert(names=[country], to='ISO3')
+    if os.path.exists(f'C:/Users/Jakob/Downloads/gadm41/{country_iso3}/gadm41_{country_iso3}_1.shp'):
+        continue
+    url = f'https://geodata.ucdavis.edu/gadm/gadm4.1/shp/gadm41_{country_iso3}_shp.zip'
+    r = requests.get(url)
+    if not zipfile.is_zipfile(io.BytesIO(r.content)):
+        print(f'File for {country} is not a zipfile')
+        continue
+    z = zipfile.ZipFile(io.BytesIO(r.content))
+    z.extractall(f'C:/Users/Jakob/Downloads/gadm41/{country_iso3}')
+    del r, z
 
 country_maps = {}
 for i, country in enumerate(relevant_countries):
@@ -1237,179 +1091,6 @@ ax.axis('off')
 plt.savefig('C:/Users/Jakob/Downloads/affectedness_world_map_choropleth_firm_numbers.pdf', dpi=300, bbox_inches='tight')
 plt.show()
 
-## plot choropleth map at 4 different times
-# affectedness_by_country = df.reset_index().groupby([df.reset_index().country.map(country_name_map), 'fetch_time'])[['covid_mention', 'any_prob_neg_sent']].mean()
-# affectedness_by_country.reset_index(inplace=True)
-# affectedness_by_country['country_iso3'] = coco.convert(names=affectedness_by_country.country, to='iso3')
-# plot_times = ['2020-02-23', '2020-05-31', '2021-09-22', '2022-12-03']
-# affectedness_by_country = affectedness_by_country.merge(country_counts, left_on='country', right_index=True)
-# affectedness_by_country['plot_col'] = affectedness_by_country.any_prob_neg_sent.apply(lambda x: np.log(x + 1))
-# affectedness_by_country.loc[affectedness_by_country.bvdid < 2000, 'plot_col'] = np.nan
-# fig, axes = plt.subplots(2,2, figsize=(10, 5))
-# axes = axes.flatten()
-# for i, t in enumerate(plot_times):
-#     ax = axes[i]
-#     plot_df = world.merge(affectedness_by_country[affectedness_by_country.fetch_time == t],
-#                           left_on='iso_a3', right_on='country_iso3')
-#     plot_df.plot(column='plot_col', ax=ax, legend=False, cmap='OrRd',  # scheme='quantiles',
-#                  missing_kwds={'color': 'lightgrey'})  # distinguish between no data and not enough data
-#     ax.axis('off')
-#     ax.set_title(t)
-# plt.savefig('C:/Users/Jakob/Downloads/affectedness_world_map_choropleth.pdf', dpi=300, bbox_inches='tight')
-# plt.show()
-
-# Plotting the world map for 4 different times
-# plot_times = ['2020-02-23', '2020-05-31', '2021-09-22', '2022-12-03']
-# affectedness_by_country = affectedness_by_country.merge(country_counts, left_on='country', right_index=True)
-# affectedness_by_country['plot_col'] = affectedness_by_country.any_prob_neg_sent.apply(lambda x: np.log(x + 1))
-# affectedness_by_country.loc[affectedness_by_country.bvdid < 2000, 'plot_col'] = np.nan
-# fig, axes = plt.subplots(2,2, figsize=(10, 5))
-# axes = axes.flatten()
-# for i, t in enumerate(plot_times):
-#     ax = axes[i]
-#     plot_df = world.merge(affectedness_by_country[affectedness_by_country.fetch_time == t],
-#                           left_on='iso_a3', right_on='country_iso3')
-#     plot_df.plot(column='plot_col', ax=ax, legend=False, cmap='OrRd',  # scheme='quantiles',
-#                  missing_kwds={'color': 'lightgrey'})  # distinguish between no data and not enough data
-#     ax.axis('off')
-#     ax.set_title(t)
-# plt.savefig('C:/Users/Jakob/Downloads/affectedness_world_map_choropleth.pdf', dpi=300, bbox_inches='tight')
-# plt.show()
-
-## scatterplot
-country = 'United States of America'
-to_plot = problem_firms_by_country.reset_index().pivot(index='country', columns='fetch_time', values='any_prob_neg_sent')
-to_plot = to_plot.div(total_firms_by_country.reset_index().set_index('country').bvdid, axis=0)
-to_plot = to_plot[to_plot.index.isin(country_counts.head(40).country)]
-to_plot.index = [coco.convert(names=[c], to='name_short') for c in to_plot.index]
-name_y = 'Share of firms with any problem & negative sentiment, in % (max over all months)'
-to_plot = to_plot.max(axis=1).mul(100).to_frame(name=name_y)
-
-ox = oxford_policy_tracker[
-    oxford_policy_tracker.country.isin([coco.convert(names=[c], to='ISO3') for c in to_plot.index])]
-ox = ox.pivot(index='country', columns='month', values='StringencyIndex_Average')
-ox.index = [coco.convert(names=[c], to='name_short') for c in ox.index]
-name_x = 'Oxford Policy Tracker Stringency Index (max over all months)'
-to_plot[name_x] = ox.max(axis=1)
-
-sns.lmplot(x=name_x, y=name_y, data=to_plot, robust=True, height=7, aspect=1.5)
-corr_coefficient = to_plot[name_x].corr(to_plot[name_y])
-plt.annotate(f'r: {corr_coefficient:.2f}', xy=(52, 0.1), fontsize=12)
-for i, row in to_plot.iterrows():
-    plt.annotate(i, (row[name_x], row[name_y]), textcoords="offset points", xytext=(0, 10), ha='center')
-plt.tight_layout()
-plt.show()
-
-## US states
-to_plot = problem_firms_by_US_states.pivot(index='region_level_1', columns='fetch_time', values=label)
-to_plot = to_plot.div(total_firms_by_US_states.set_index('region_level_1').total_firms, axis=0)
-name_y = 'Share of firms with any problem & negative sentiment, in % (max over all months)'
-to_plot = to_plot.max(axis=1).mul(100).to_frame(name=name_y)
-
-ox = oxford_policy_tracker_US.pivot(index='region_level_1', columns='month',
-                                    values='StringencyIndex_Average')
-name_x = 'Oxford Policy Tracker Stringency Index (max over all months)'
-to_plot[name_x] = ox.max(axis=1)
-
-sns.lmplot(x=name_x, y=name_y, data=to_plot, robust=True, height=7, aspect=1.5)
-corr_coefficient = to_plot[name_x].corr(to_plot[name_y])
-plt.annotate(f'r: {corr_coefficient:.2f}', xy=(62, 2.4), fontsize=12)
-for i, row in to_plot.iterrows():
-    plt.annotate(i, (row[name_x], row[name_y]), textcoords="offset points", xytext=(0, 10), ha='center')
-plt.tight_layout()
-plt.show()
-
-## regression table
-categories = ['Covid mention', 'Mildly affected', 'Moderately affected', 'Severely affected']
-
-reg_results_path = '/Users/Jakob/Downloads/'
-reg_results_sales_path = reg_results_path + 'full_compustat_sample__on_llm_affectedness_vars_llama_3_1_manual_logits4_ffe_with_covid_mention.csv'
-df_coeff = pd.read_csv(reg_results_sales_path, skiprows=lambda x: not x % 2, header=None, nrows=4)
-df_std = pd.read_csv(reg_results_sales_path, skiprows=lambda x: (x == 0) or x % 2, header=None, nrows=4).dropna(how='all')
-
-
-def fix_df_regression_results(df):
-    df.index = categories
-    df.columns = ['Basic fixed effects', 'Additional controls', 'Full fixed effects']
-
-    # reverse df
-    df = df.iloc[::-1]
-
-    return df
-
-df_coeff_sales = fix_df_regression_results(df_coeff[[1,2,3]])
-df_std_sales = fix_df_regression_results(df_std[[1,2,3]])
-df_coeff_stock_return = fix_df_regression_results(df_coeff[[4,5,6]])
-df_std_stock_return = fix_df_regression_results(df_std[[4,5,6]])
-
-# annualize the quarterly coefficients
-df_coeff_sales = df_coeff_sales.apply(lambda x: ((1 + x/100) ** 4 - 1) * 100)
-df_std_sales = df_std_sales.apply(lambda x: ((1 + x/100) ** 4 - 1) * 100)
-df_coeff_stock_return = df_coeff_stock_return.apply(lambda x: ((1 + x/100) ** 4 - 1) * 100)
-df_std_stock_return = df_std_stock_return.apply(lambda x: ((1 + x/100) ** 4 - 1) * 100)
-
-categories.reverse()
-
-# Create the plot
-plt.rcParams.update({'axes.unicode_minus': False})
-fig, axes = plt.subplots(nrows=1, ncols=2, sharex=False, sharey=True,
-            figsize=(6, 4))
-
-z = 1.96
-
-# Add the horizontal error bars
-ax = axes[0]
-for i, category in enumerate(categories):
-    ax.errorbar(df_coeff_sales.iloc[i]['Basic fixed effects'], i, xerr=z * df_std_sales.iloc[i]['Basic fixed effects'], fmt='o', color='g', label='Basic fixed effects',
-                capsize=5)
-    ax.errorbar(df_coeff_sales.iloc[i]['Additional controls'], i-0.2, xerr=z * df_std_sales.iloc[i]['Additional controls'], fmt='o', color='b',label='Additional controls',
-                capsize=5)
-    ax.errorbar(df_coeff_sales.iloc[i]['Full fixed effects'], i-0.4, xerr=z * df_std_sales.iloc[i]['Full fixed effects'], fmt='o', color='r', label='Full fixed effects',
-                capsize=5)
-
-ax.set_yticks(range(len(categories)))
-ax.set_yticklabels(categories)
-ax.set_xlim(-25, 9)
-ax.set_xlabel('Annualized sales growth')
-ax.xaxis.set_major_formatter(mtick.PercentFormatter(decimals=0))
-
-ax = axes[1]
-for i, category in enumerate(categories):
-    ax.errorbar(df_coeff_stock_return.iloc[i]['Basic fixed effects'], i, xerr=z * df_std_stock_return.iloc[i]['Basic fixed effects'], fmt='o', color='g', label='Basic fixed effects',
-                capsize=5)
-    ax.errorbar(df_coeff_stock_return.iloc[i]['Additional controls'], i-0.2, xerr=z * df_std_stock_return.iloc[i]['Additional controls'], fmt='o', color='b', label='Additional controls',
-                capsize=5)
-    ax.errorbar(df_coeff_stock_return.iloc[i]['Full fixed effects'], i-0.4, xerr=z * df_std_stock_return.iloc[i]['Full fixed effects'], fmt='o', color='r', label='Full fixed effects',
-                capsize=5)
-
-ax.set_yticks(range(len(categories)))
-ax.set_yticklabels(categories)
-ax.set_xlim(-8, 0.5)
-ax.set_xlabel('Annualized stock return')
-ax.xaxis.set_major_formatter(mtick.PercentFormatter(decimals=1))
-
-for ax in axes:
-    ax.grid(True, which='both', axis='x', linewidth=0.15)
-    # # minor grid with half the linewidth
-    # ax.grid(True, which='minor', axis='x', linewidth=0.25)
-    ax.axvline(0, color='black', linewidth=0.5, linestyle='--')
-    ax.tick_params(axis='y', which='minor', left=False)
-    ax.tick_params(axis='y', which='minor', right=False)
-
-handles, labels = ax.get_legend_handles_labels()
-fig.legend(handles[-3:], labels[-3:], loc='upper center', bbox_to_anchor=(0.5, 1.13), fancybox=True, #0.06
-              shadow=True, ncol=3, bbox_transform=plt.gcf().transFigure, columnspacing=0.5,
-           handletextpad=-0.2, title='95% confidence intervals')
-plt.tight_layout()
-
-# Show the plot
-plt.subplots_adjust(wspace=0.18)
-fig.savefig('/Users/Jakob/Downloads/regression_errorbars_17-10-24.pdf', dpi=300, bbox_inches='tight')
-plt.show()
-
-# high heartbeat filter
-# high_heartbeat_bvdids = df[df.content_digest_heartbeat==1].bvdid.unique()
-
 ## make side panel plot
 dtypes = affected_max_by_firm.dtypes
 sum_cols = dtypes[dtypes!='category'].index
@@ -1597,25 +1278,6 @@ plt.tight_layout()
 plt.savefig('/Users/Jakob/Downloads/affectedness_tags_by_country_small_llm.pdf', dpi=300, bbox_inches='tight')
 plt.show()
 
-## max affectedness by industry
-affected_by_industry_max = affected_max_by_firm.groupby('nace_section', observed=True)[sum_cols].sum()
-affected_by_industry_max['affected_min_1'] = affected_by_industry_max[affected_dummy_cols].sum(axis=1, min_count=1)
-affected_by_industry_max['affected_min_2'] = affected_by_industry_max[affected_dummy_cols[1:]].sum(axis=1, min_count=1)
-
-## tags by industry plot
-to_plot = affected_by_industry_max.loc[relevant_nace_sections].copy(deep=True)
-fig, ax = plt.subplots(figsize=(4.3, 5.5))
-plot_affectedness_tags_by_group(ax, to_plot)
-plt.tight_layout()
-plt.savefig('/Users/Jakob/Downloads/affectedness_tags_by_industry_small_llm.pdf', dpi=300, bbox_inches='tight')
-plt.show()
-
-## make US state plot with different affectedness indicators
-# affectedness_categories_by_us_state = df[df.country=='United States of America'].reset_index().groupby(['region_level_1', 'date'], observed=True)[affectedness_cols].sum()
-# affectedness_categories_by_us_state = affectedness_categories_by_us_state.groupby('region_level_1').max()
-# affectedness_categories_by_us_state = affectedness_categories_by_us_state.join(firm_count_by_state.set_index('region_level_1'))
-# affectedness_categories_by_us_state.sort_values('bvdid', ascending=True, inplace=True)
-
 affected_by_us_state_max = affected_max_by_firm[affected_max_by_firm.country=='United States of America'].groupby('region_level_1', observed=True)[sum_cols].sum()
 
 def plot_affectedness_categories_by_us_state_side_panel_shares_appendix(ax, n_states=50, drop_states=[],
@@ -1767,272 +1429,6 @@ plot_world_map_with_cities_covid_mention(ax)
 plt.savefig('C:/Users/Jakob/Downloads/affectedness_world_map_18_04_24_covid_mention.pdf', dpi=300, bbox_inches='tight')
 plt.show()
 
-
-
-
-## make country plot with different affectedness indicators
-affectedness_categories_by_us_state = df[df.country=='United States of America'].reset_index().groupby(['region_level_1', 'fetch_time'], observed=True)[affectedness_cols].sum()
-affectedness_categories_by_us_state = affectedness_categories_by_us_state.groupby('region_level_1').max()
-affectedness_categories_by_us_state = affectedness_categories_by_us_state.join(firm_count_by_state.set_index('region_level_1'))
-affectedness_categories_by_us_state.sort_values('bvdid', ascending=True, inplace=True)
-
-def plot_affectedness_categories_by_us_state_side_panel_shares_appendix(ax, n_states=50, drop_states=[],
-                                                              y_margin=0.012, legend_pos=(0.5, 1.03),
-                                                              ytick_right=False):
-    to_plot = affectedness_categories_by_us_state.dropna(subset=['bvdid']).tail(n_states).copy(deep=True)
-    to_plot.drop(drop_states, inplace=True)
-
-    labels = {col: label for col, label in zip(affectedness_cols, ['Covid mention', 'Production problem', 'Demand problem', 'Supply problem'])}
-    for col in affectedness_cols:
-        to_plot[col] = to_plot[col] / to_plot['bvdid'] # share of firms
-
-    to_plot.sort_values('covid_mention', ascending=True, inplace=True)
-
-    ax.set_xlim(0, 2.5)
-    ax2 = ax.twiny()
-    ax2.set_xlim(0, 25)
-    for i, col in enumerate(affectedness_cols): #  + ['bvdid']
-        offset = i * 0.23
-        offset -= 0.32
-        if col == 'covid_mention':
-            color = 'black'
-            ax2.hlines(y=np.arange(len(to_plot)) - offset, xmin=0, xmax=to_plot[col] * 100, color='black', zorder=-1)
-            ax2.scatter(y=np.arange(len(to_plot)) - offset, x=to_plot[col] * 100,
-                       color=color, label=labels[col])
-        else:
-            color = sns.color_palette('YlOrRd_r_d')[i*2-1]
-            ax.hlines(y=np.arange(len(to_plot)) - offset, xmin=0, xmax=to_plot[col] * 100, color='black', zorder=-1)
-            ax.scatter(y=np.arange(len(to_plot)) - offset, x=to_plot[col] * 100,
-                       color=color, label=labels[col])
-    # legend = ax.legend(loc='lower center', bbox_to_anchor=(0.6, 1), bbox_transform=ax.transAxes,
-    #                    ncol=2, fancybox=True, shadow=True) #, title='WAIs')
-    lines, labels = ax.get_legend_handles_labels()
-    lines2, labels2 = ax2.get_legend_handles_labels()
-    ax2.legend(lines2 + lines, labels2 + labels, loc='lower center', bbox_to_anchor=legend_pos, # bbox_transform=ax.transAxes,
-              ncol=2, fancybox=True, shadow=True)
-
-    ax.set_yticks(range(len(to_plot)))
-    if ytick_right:
-        ax.yaxis.tick_right()
-        ax.set_yticklabels(to_plot.index, ha='left')
-    else:
-        ax.set_yticklabels(to_plot.index, ha='right')
-    ax.yaxis.set_minor_locator(plt.NullLocator())
-    # ax.yaxis.tick_right()
-    # ax.set_xscale('log')
-    ax.tick_params(axis='x', which='both')
-    ax.margins(y=y_margin)
-    ax.set_xlabel('Share of firms (problem categories)')
-    ax2.set_xlabel('Share of firms (Covid mention)')
-
-    # remove y ticks
-    ax.tick_params(axis='y', which='both', left=False, right=False)
-
-    ax.xaxis.set_major_formatter(mtick.PercentFormatter(decimals=1))
-    ax2.xaxis.set_major_formatter(mtick.PercentFormatter(decimals=0))
-
-    ax.grid(True, which='major', axis='x', linewidth=0.15)
-    ax.set_axisbelow(True)
-
-    return ax
-
-## make side panel for all countries for appendix
-fig, ax = plt.subplots(figsize=(6, 14))
-plot_affectedness_categories_by_us_state_side_panel_shares_appendix(ax)
-plt.tight_layout()
-plt.savefig('/Users/Jakob/Downloads/sidepanel_affectedness_categories_by_us_state_appendix_shares_ordered_by_covid_mention.pdf', dpi=300, bbox_inches='tight')
-plt.show()
-
-
-### same plots but with covid mentioning firms as denominator
-
-## make country plot with different affectedness indicators, number of covid mentioning firms as denominator
-affectedness_categories_by_country = df.reset_index().groupby(['country', 'fetch_time'], observed=True)[affectedness_cols + ['any_prob_neg_sent']].sum()
-affectedness_categories_by_country = affectedness_categories_by_country.groupby('country').mean()
-affectedness_categories_by_country = affectedness_categories_by_country.sort_values('covid_mention', ascending=False).head(20)
-
-def plot_affectedness_categories_by_country_side_panel_shares_div_by_covid_mentioning_firms(ax, drop_countries=[],
-                                                              y_margin=0.012, legend_pos=(0.5, 1.03),
-                                                              ytick_right=False):
-    to_plot = affectedness_categories_by_country.copy(deep=True)
-    to_plot.drop(drop_countries, inplace=True)
-
-    labels = {col: label for col, label in zip(['any_prob_neg_sent'], ['Any problem & neg. sentiment'])}
-    for col in ['any_prob_neg_sent']:
-        to_plot[col] = to_plot[col] / to_plot['covid_mention'] # share of firms
-
-    to_plot.sort_values('any_prob_neg_sent', ascending=True, inplace=True)
-
-    ax.set_xlim(left=0, right=15)
-    ax2 = ax.twiny()
-    ax2.set_xlim(left=0, right=15)
-    color = 'black'
-    ax.hlines(y=np.arange(len(to_plot)), xmin=0, xmax=to_plot['any_prob_neg_sent'] * 100, color='black', zorder=-1)
-    ax.scatter(y=np.arange(len(to_plot)), x=to_plot['any_prob_neg_sent'] * 100,
-               color=color, label=labels['any_prob_neg_sent'])
-    lines, labels = ax.get_legend_handles_labels()
-    ax.legend(lines, labels, loc='lower center', bbox_to_anchor=legend_pos, # bbox_transform=ax.transAxes,
-              ncol=2, fancybox=True, shadow=True)
-
-    ax.set_yticks(range(len(to_plot)))
-    if ytick_right:
-        ax.yaxis.tick_right()
-        ax.set_yticklabels(to_plot.index, ha='left')
-    else:
-        ax.set_yticklabels(to_plot.index, ha='right')
-    ax.yaxis.set_minor_locator(plt.NullLocator())
-    # ax.yaxis.tick_right()
-    # ax.set_xscale('log')
-    ax.tick_params(axis='x', which='both')
-    ax.margins(y=y_margin)
-    ax.set_xlabel('Share of Covid mentioning firms (mean over 2020-2022)')
-
-    # remove y ticks
-    ax.tick_params(axis='y', which='both', left=False, right=False)
-
-    ax.xaxis.set_major_formatter(mtick.PercentFormatter(decimals=0))
-    ax2.xaxis.set_major_formatter(mtick.PercentFormatter(decimals=0))
-
-    ax.grid(True, which='major', axis='x', linewidth=0.15)
-    ax.set_axisbelow(True)
-
-    return ax
-
-## make side panel for all countries for appendix
-fig, ax = plt.subplots(figsize=(6, 7))
-plot_affectedness_categories_by_country_side_panel_shares_div_by_covid_mentioning_firms(ax)
-plt.tight_layout()
-plt.savefig('/Users/Jakob/Downloads/plot_affectedness_categories_by_country_side_panel_shares_div_by_covid_mentioning_firms.pdf', dpi=300, bbox_inches='tight')
-plt.show()
-
-
-## make us states plot with different affectedness indicators, number of covid mentioning firms as denominator
-affectedness_categories_by_us_state = df[df.country=='United States of America'].reset_index().groupby(['region_level_1', 'fetch_time'], observed=True)[affectedness_cols + ['any_prob_neg_sent']].sum()
-affectedness_categories_by_us_state = affectedness_categories_by_us_state.groupby('region_level_1').mean()
-affectedness_categories_by_us_state = affectedness_categories_by_us_state.sort_values('covid_mention', ascending=False).head(51)
-
-def plot_affectedness_categories_by_us_state_side_panel_shares_div_by_covid_mentioning_firms(ax, drop_states=[],
-                                                              y_margin=0.012, legend_pos=(0.5, 1.03),
-                                                              ytick_right=False):
-    to_plot = affectedness_categories_by_us_state.copy(deep=True)
-    to_plot.drop(drop_states, inplace=True)
-
-    labels = {col: label for col, label in zip(['any_prob_neg_sent'], ['Any problem & neg. sentiment'])}
-    for col in ['any_prob_neg_sent']:
-        to_plot[col] = to_plot[col] / to_plot['covid_mention'] # share of firms
-
-    to_plot.sort_values('any_prob_neg_sent', ascending=True, inplace=True)
-
-    ax.set_xlim(left=0, right=12.5)
-    ax2 = ax.twiny()
-    ax2.set_xlim(left=0, right=12.5)
-    color = 'black'
-    ax.hlines(y=np.arange(len(to_plot)), xmin=0, xmax=to_plot['any_prob_neg_sent'] * 100, color='black', zorder=-1)
-    ax.scatter(y=np.arange(len(to_plot)), x=to_plot['any_prob_neg_sent'] * 100,
-               color=color, label=labels['any_prob_neg_sent'])
-    lines, labels = ax.get_legend_handles_labels()
-    ax.legend(lines, labels, loc='lower center', bbox_to_anchor=legend_pos, # bbox_transform=ax.transAxes,
-              ncol=2, fancybox=True, shadow=True)
-
-    ax.set_yticks(range(len(to_plot)))
-    if ytick_right:
-        ax.yaxis.tick_right()
-        ax.set_yticklabels(to_plot.index, ha='left')
-    else:
-        ax.set_yticklabels(to_plot.index, ha='right')
-    ax.yaxis.set_minor_locator(plt.NullLocator())
-    # ax.yaxis.tick_right()
-    # ax.set_xscale('log')
-    ax.tick_params(axis='x', which='both')
-    ax.margins(y=y_margin)
-    ax.set_xlabel('Share of Covid mentioning firms (mean over 2020-2022)')
-
-    # remove y ticks
-    ax.tick_params(axis='y', which='both', left=False, right=False)
-
-    ax.xaxis.set_major_formatter(mtick.PercentFormatter(decimals=0))
-    ax2.xaxis.set_major_formatter(mtick.PercentFormatter(decimals=0))
-
-    ax.grid(True, which='major', axis='x', linewidth=0.15)
-    ax.set_axisbelow(True)
-
-    return ax
-
-## make side panel for all countries for appendix
-fig, ax = plt.subplots(figsize=(6, 14))
-plot_affectedness_categories_by_us_state_side_panel_shares_div_by_covid_mentioning_firms(ax)
-plt.tight_layout()
-plt.savefig('/Users/Jakob/Downloads/plot_affectedness_categories_by_us_state_side_panel_shares_div_by_covid_mentioning_firms.pdf', dpi=300, bbox_inches='tight')
-plt.show()
-
-
-## most affected countries by stringency
-stringency_mean_by_country = oxford_policy_tracker.groupby('country').StringencyIndex_Average.mean()
-stringency_mean_by_country = stringency_mean_by_country.loc[coco.convert(names=list(affectedness_categories_by_country.index), to='iso3')]
-stringency_mean_by_country.index = list(affectedness_categories_by_country.index)
-
-def plot_side_panel(ax, to_plot: pd.Series, label, xlabel, y_margin=0.012, legend_pos=(0.5, 1.03), ytick_right=False):
-
-    to_plot.sort_values(ascending=True, inplace=True)
-
-    ax.set_xlim(left=0, right=60)
-    ax2 = ax.twiny()
-    ax2.set_xlim(left=0, right=60)
-    color = 'black'
-    ax.hlines(y=np.arange(len(to_plot)), xmin=0, xmax=to_plot, color='black', zorder=-1)
-    ax.scatter(y=np.arange(len(to_plot)), x=to_plot,
-               color=color, label=label)
-    lines, labels = ax.get_legend_handles_labels()
-    ax.legend(lines, labels, loc='lower center', bbox_to_anchor=legend_pos, # bbox_transform=ax.transAxes,
-              ncol=2, fancybox=True, shadow=True)
-
-    ax.set_yticks(range(len(to_plot)))
-    if ytick_right:
-        ax.yaxis.tick_right()
-        ax.set_yticklabels(to_plot.index, ha='left')
-    else:
-        ax.set_yticklabels(to_plot.index, ha='right')
-    ax.yaxis.set_minor_locator(plt.NullLocator())
-    # ax.yaxis.tick_right()
-    # ax.set_xscale('log')
-    ax.tick_params(axis='x', which='both')
-    ax.margins(y=y_margin)
-    ax.set_xlabel(xlabel)
-
-    # remove y ticks
-    ax.tick_params(axis='y', which='both', left=False, right=False)
-
-    ax.xaxis.set_major_formatter(mtick.PercentFormatter(decimals=0))
-    ax2.xaxis.set_major_formatter(mtick.PercentFormatter(decimals=0))
-
-    ax.grid(True, which='major', axis='x', linewidth=0.15)
-    ax.set_axisbelow(True)
-
-    return ax
-
-fig, ax = plt.subplots(figsize=(6, 7))
-plot_side_panel(ax, stringency_mean_by_country, 'Stringency Index', 'OxCGRT Stringency index (mean over 2020-2022)')
-plt.tight_layout()
-plt.savefig('/Users/Jakob/Downloads/plot_stringency_index_side_panel.pdf', dpi=300, bbox_inches='tight')
-plt.show()
-
-stringency_mean_by_us_state = oxford_policy_tracker_US.groupby('region_level_1').StringencyIndex_Average.mean()
-stringency_mean_by_us_state.rename(index={'Washington DC': 'District of Columbia'}, inplace=True)
-stringency_mean_by_us_state = stringency_mean_by_us_state.loc[affectedness_categories_by_us_state.index]
-
-fig, ax = plt.subplots(figsize=(6, 12))
-plot_side_panel(ax, stringency_mean_by_us_state, 'Stringency Index', 'OxCGRT Stringency index (mean over 2020-2022)')
-plt.tight_layout()
-plt.savefig('/Users/Jakob/Downloads/plot_stringency_index_side_panel_us_states.pdf', dpi=300, bbox_inches='tight')
-plt.show()
-
-
-
-
-
-
-
-
 ## create table with share of firms covered
 msme = pd.read_excel('/Users/Jakob/Downloads/2019 MSME-EI Database.xlsx',
                      sheet_name='Latest Year Available', header=[0,1])
@@ -2144,10 +1540,6 @@ s.to_latex('/Users/Jakob/Downloads/country_firms_table_llm.tex',
            )
 
 country_firms_table.to_csv('/Users/Jakob/Downloads/country_firms_table.csv')
-
-
-
-
 
 # plot jaccard matrix of domain overlap between crawls
 jaccard_matrix = pd.read_csv('C:/Users/Jakob/Downloads/cc_orbis_global_jaccard_matrix.csv', index_col=0)
