@@ -1,4 +1,4 @@
-# Replication package for "A Web-Based Indicator for Real-Time Monitoring of Economic Shocks"
+# Replication package for "Real-time Monitoring of Economic Shocks using Company Websites"
 
 To generate our web-based affectedness indicator (WAI) from CommonCrawl archive data:
   - Run keywords_languages.py to get a keyword list extended with all translations of the original keywords
